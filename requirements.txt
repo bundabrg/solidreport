@@ -1,0 +1,6 @@
+click~=8.2.1
+gotenberg-client
+jinja2
+pydantic
+psycopg2_binary
+ruamel.yaml
