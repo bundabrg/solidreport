@@ -14,27 +14,24 @@ from psycopg2.extras import NamedTupleCursor
 @click.command("staff_times")
 @click.argument("output", default="output.pdf")
 @click.option("--organization", help="Organization UUID")
-@click.option("--template", help="Which Template to use", default="staff_times")
+@click.option("--template", help="Which Template to use (Default:staff_times")
 @click.option(
     "--footer-template",
-    help="Which template to use for the footer",
-    default="footer",
+    help="Which template to use for the footer (Default:footer)",
 )
 @click.option(
     "--start",
-    help="Start Date (YYYY-MM-DD)",
+    help="Start Date (YYYY-MM-DD) (Default:today)",
     type=click.DateTime(formats=["%Y-%m-%d"]),
-    default=str(datetime.date.today()),
 )
 @click.option(
     "--end",
-    help="End Date (YYYY-MM-DD)",
+    help="End Date (YYYY-MM-DD) (Default:today)",
     type=click.DateTime(formats=["%Y-%m-%d"]),
-    default=str(datetime.date.today()),
 )
-@click.option("--project", help="Filter by project (partial match)", default="")
-@click.option("--member", help="Filter by member (partial match)", default="")
-@click.option("--client", help="Filter by client (partial match)", default="")
+@click.option("--project", help="Filter by project (partial match)")
+@click.option("--member", help="Filter by member (partial match)")
+@click.option("--client", help="Filter by client (partial match)")
 @click.option(
     "--add",
     help="Add a file as a resource. Can be called multiple times",
@@ -43,21 +40,33 @@ from psycopg2.extras import NamedTupleCursor
 @click.pass_context
 def generate(
     ctx,
-    output,
-    organization,
-    template,
-    footer_template,
-    start,
-    end,
-    project,
-    member,
-    client,
-    add,
+    **args,
 ):
+    output = args.get('output')
+    start = args.get('start')
+    end = args.get('end')
+
     print(f"Generating {output} from {start.date()} to {end.date()}")
-
     cfg = ctx.obj["config"]
+    env = ctx.obj["template"]
 
+    report(cfg, env, **{k: v for k,v in args.items() if v is not None})
+
+def report(
+        cfg,
+        env,
+        output="output.pdf",
+        organization=None,
+        add=None,
+        project="",
+        member="",
+        client="",
+        start = datetime.date.today(),
+        end = datetime.date.today(),
+        footer_template = "footer",
+        template = "staff_times",
+):
+    add = add if add is not None else []
     connection = None
     organization = organization if organization else str(cfg.defaults.organization)
     try:
@@ -75,7 +84,7 @@ def generate(
                      LEFT JOIN clients ON (projects.client_id = clients.id)
                 WHERE te.organization_id = %(organization_id)s
                     AND te.start >= %(start)s
-                    AND te.end <= %(end)s
+                    AND te.end < %(end)s
                     AND (clients.name is null or clients.name ilike %(client)s)
                     AND (projects.name is null or projects.name ilike %(project)s)
                     AND users.name ilike %(member)s
@@ -86,7 +95,7 @@ def generate(
                 {
                     "organization_id": organization,
                     "start": start.isoformat(),
-                    "end": end.isoformat(),
+                    "end": (end+datetime.timedelta(days=1)).isoformat(),
                     "project": "%{}%".format(project),
                     "member": "%{}%".format(member),
                     "client": "%{}%".format(client),
@@ -256,7 +265,6 @@ def generate(
         ),
     }
 
-    env = ctx.obj["template"]
     tmpl = env.get_template(template + ".html")
     with tempfile.NamedTemporaryFile() as tmp:
         tmpl_footer = env.get_template(footer_template + ".html")
