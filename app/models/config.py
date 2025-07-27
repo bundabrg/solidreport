@@ -14,6 +14,10 @@ class Db(BaseModel):
     username: str
     password: str
 
+class Gotenberg(BaseModel):
+    uri: str = "http://127.0.0.1:3000"
+
 class Config(BaseModel):
     defaults: Defaults = Defaults()
     db: Db | None = None
+    gotenberg: Gotenberg = Gotenberg()

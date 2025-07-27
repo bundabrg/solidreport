@@ -20,9 +20,12 @@ db:
   database: <database>
   username: <username>
   password: <password>
+
+gotenberg:
+  uri: http://<address.to.gotenberg>:3000
 ```
 
-- Make sure the database is reachable.
+- Make sure the database is reachable. Also `gotenberg`.
 
 - If you download this directly from github you need to make sure to create a python venv and to
   install all the dependancies in `requirements.txt`. Doing the following under Linux might work:
@@ -101,5 +104,4 @@ The following would be useful:
 - Documentation (how to write a report/template for
   example). [mkdocs-material](https://github.com/squidfunk/mkdocs-material) is what
   I normally like and can be published via github action to pages.
-- Github actions to build a docker image
-- 
+- Github actions to build a docker image. Advantage of this is we don't need to make db and gotenberg visible.

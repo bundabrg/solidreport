@@ -263,7 +263,7 @@ def generate(
         tmp.write(tmpl_footer.render(data=data, add=add).encode("utf-8"))
         tmp.flush()
 
-        with GotenbergClient("http://127.0.0.1:3000") as client:
+        with GotenbergClient(cfg.gotenberg.uri) as client:
             with client.chromium.html_to_pdf() as route:
                 response = (
                     route.string_index(tmpl.render(data=data, add=add))
