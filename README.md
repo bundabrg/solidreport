@@ -162,17 +162,17 @@ git clone https://github.com/bundabrg/solidreport.git
 docker build solidreport -t solidreport
 ```
 
-3. Create a folder to place your files in. Lets call it `override`. You can also create a folder for output files to go in called `output`
+3. Create a folder to place your files in. Lets call it `sr-data`. 
 ```shell
-mkdir override output
+mkdir sr-data
 ```
 
-4. Place your `config.yml` file into `override`. You can also create a `template` folder under there to provide
-your own custom templates. If you have a logo and `custom.css` it can also go under `override`. The 
+4. Place your `config.yml` file into `sr-data`. You can also create a `template` folder under there to provide
+your own custom templates. If you have a logo and `custom.css` it can also go under `sr-data`. The 
 hostname for database would be `database` and gotenberg would be `gotenberg` if you followed the solidtime
 docker-compose guide.
 
-5. Find out the network of your solidtime. In my case it is `solidtime_internal`
+5. Find out the network of your solidtime. In my case it is `solidtime_internal`. It might be called `docker_internal`.
 ```shell
 docker network ls
 ```
@@ -180,8 +180,8 @@ docker network ls
 6. Execute solidreport
 ```shell
 docker run -it  \
-   -v ./override:/override \
-   -v ./output:/output \
+   --network=solidtime_internal \
+   -v ./sr-data:/sr-data \
    solidreport generate staff_times 
 ```
 

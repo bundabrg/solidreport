@@ -63,8 +63,10 @@ def generate(
         if v is not None
     }
 
-    if args["organization"] is None:
+    if args.get("organization") is None:
         args["organization"] = str(cfg.defaults.organization)
+    if args.get("organization") is None:
+        raise Exception("No organization specified")
 
     report(db, env, gotenberg, **args)
 
