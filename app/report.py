@@ -1,9 +1,13 @@
 import os
+import sys
 from pathlib import Path
+from pprint import pprint
 
 import click
+import psycopg2
 from jinja2 import Environment, FileSystemLoader
 
+import commands
 import reports
 from filters import FILTERS
 from lib.config import load_config
@@ -19,20 +23,9 @@ def cli(ctx, config):
     ctx.ensure_object(dict)
     ctx.obj["config"] = cfg
 
-    # Setup Template Environment
-    env = Environment(
-        loader=FileSystemLoader(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), "templates")
-        )
-    )
-    for filter_name, filter in FILTERS.items():
-        env.filters[filter_name] = filter
-    ctx.obj["template"] = env
-
-
 if __name__ == "__main__":
     # Add All Reports as Commands
-    for c in reports.GENERATE:
+    for c in commands.COMMANDS:
         cli.add_command(c)
 
     cli()

@@ -1,0 +1,17 @@
+{% extends "base_email.mjml" %}
+{% block email_body %}
+<mj-text>
+ Please find attached a summary of your times.
+</mj-text>
+
+<mj-table padding-left="50px" padding-right="50px" font-family="Verdana">
+    <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
+        <th style="padding: 0 15px 0 0;">Time Period</th>
+        <td style="padding: 0 15px 0 0;text-align: right;">{{ start }} to {{ end }}</td>
+    </tr>
+    <tr style="text-align:left;padding:15px 0;">
+        <th style="padding: 0 15px 0 0;">Duration</th>
+        <td style="padding: 0 15px 0 0;text-align: right;">{{ data.members[0].duration|format_time }} / {{ data.members[0].duration|format_hours }} hours</td>
+    </tr>
+</mj-table>
+{% endblock %}

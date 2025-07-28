@@ -4,11 +4,11 @@ from math import ceil, floor
 from pathlib import Path
 
 import click
-import psycopg2
-from gotenberg_client import GotenbergClient
 from gotenberg_client.options import PageMarginsType, Measurement, MeasurementUnitType
 from psycopg2 import Error
 from psycopg2.extras import NamedTupleCursor
+
+import systems
 
 
 @click.command("staff_times")
@@ -42,41 +42,51 @@ def generate(
     ctx,
     **args,
 ):
-    output = args.get('output')
-    start = args.get('start')
-    end = args.get('end')
+    output = args.get("output")
+    start = args.get("start")
+    end = args.get("end")
 
     print(f"Generating {output} from {start.date()} to {end.date()}")
     cfg = ctx.obj["config"]
-    env = ctx.obj["template"]
+    db = systems.database(cfg)
+    env = systems.jinja(cfg)
+    gotenberg = systems.gotenberg(cfg)
 
-    report(cfg, env, **{k: v for k,v in args.items() if v is not None})
+    # Apply defaults and remove any values set to None
+    args = {
+        k: v
+        for k, v in {
+            k: v if v is not None else cfg.defaults.get(k) for k, v in args.items()
+        }.items()
+        if v is not None
+    }
+
+    if args["organization"] is None:
+        args["organization"] = str(cfg.defaults.organization)
+
+    report(db, env, gotenberg, **args)
+
 
 def report(
-        cfg,
-        env,
-        output="output.pdf",
-        organization=None,
-        add=None,
-        project="",
-        member="",
-        client="",
-        start = datetime.date.today(),
-        end = datetime.date.today(),
-        footer_template = "footer",
-        template = "staff_times",
+    db,
+    env,
+    gotenberg,
+    output="output.pdf",
+    organization=None,
+    add=None,
+    project="",
+    member="",
+    client="",
+    start=datetime.date.today(),
+    end=datetime.date.today(),
+    footer_template="footer",
+    template="staff_times",
 ):
     add = add if add is not None else []
-    connection = None
-    organization = organization if organization else str(cfg.defaults.organization)
     try:
-        connection = psycopg2.connect(
-            dsn=f"host={cfg.db.host} dbname={cfg.db.database} user={cfg.db.username} password={cfg.db.password}"
-        )
-
-        with connection.cursor(cursor_factory=NamedTupleCursor) as cursor:
+        with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
             sql = """
-                SELECT te.start, te.end, te.description, users.name as user_name, 
+                SELECT te.start, te.end, te.description, users.name as user_name,
                      clients.name as client_name, projects.name as project_name
                 FROM users JOIN members ON (members.user_id = users.id)
                      JOIN time_entries te ON (te.member_id = members.id)
@@ -95,7 +105,7 @@ def report(
                 {
                     "organization_id": organization,
                     "start": start.isoformat(),
-                    "end": (end+datetime.timedelta(days=1)).isoformat(),
+                    "end": (end + datetime.timedelta(days=1)).isoformat(),
                     "project": "%{}%".format(project),
                     "member": "%{}%".format(member),
                     "client": "%{}%".format(client),
@@ -107,9 +117,7 @@ def report(
         print("Error while connecting to PostgreSQL", error)
         return
     finally:
-        if connection:
-            cursor.close()
-            connection.close()
+        cursor.close()
 
     # Parse out time entries
     members = {}
@@ -271,7 +279,7 @@ def report(
         tmp.write(tmpl_footer.render(data=data, add=add).encode("utf-8"))
         tmp.flush()
 
-        with GotenbergClient(cfg.gotenberg.uri) as client:
+        with gotenberg() as client:
             with client.chromium.html_to_pdf() as route:
                 response = (
                     route.string_index(tmpl.render(data=data, add=add))
@@ -285,3 +293,5 @@ def report(
                     .run()
                 )
                 response.to_file(Path(output))
+
+    return data
