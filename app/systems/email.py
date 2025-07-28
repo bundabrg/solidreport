@@ -7,6 +7,10 @@ from models.config import Config
 
 
 def email(cfg: Config):
+    templates_location = [os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "templates/email")]
+    if cfg.override:
+        templates_location = [os.path.join(cfg.override, "templates/email")] + templates_location
+
     # Load Email Manager
     email_manager = emailclient.Manager(
         host=cfg.email.host,
@@ -15,7 +19,7 @@ def email(cfg: Config):
         password=cfg.email.password,
         from_name=cfg.email.from_name,
         from_email=cfg.email.from_email,
-        templates=override_str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "templates/email"), cfg.override),
+        templates=templates_location,
     )
 
     # Add on our filters
