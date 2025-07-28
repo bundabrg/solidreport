@@ -23,11 +23,13 @@ import systems
     "--start",
     help="Start Date (YYYY-MM-DD) (Default:today)",
     type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(datetime.date.today())
 )
 @click.option(
     "--end",
     help="End Date (YYYY-MM-DD) (Default:today)",
     type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(datetime.date.today())
 )
 @click.option("--project", help="Filter by project (partial match)")
 @click.option("--member", help="Filter by member (partial match)")
@@ -61,8 +63,10 @@ def generate(
         if v is not None
     }
 
-    if args["organization"] is None:
+    if args.get("organization") is None:
         args["organization"] = str(cfg.defaults.organization)
+    if args.get("organization") is None:
+        raise Exception("No organization specified")
 
     report(db, env, gotenberg, **args)
 
@@ -158,7 +162,7 @@ def report(
                 "projects"
             ][r.project_name]["description"].append(r.description)
 
-        duration = (r.end - r.start).seconds
+        duration = int((r.end - r.start).total_seconds())
         members[member_name]["dates"][start_date]["clients"][r.client_name]["projects"][
             r.project_name
         ]["duration"] += duration

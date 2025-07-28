@@ -31,8 +31,11 @@ class Action(BaseModel):
 
 
 class Config(BaseModel):
-    defaults: Dict[str, Any]
-    db: Db | None = None
+    defaults: Dict[str, Any] = {}
+    db: Db
     email: Email | None = None
     gotenberg: Gotenberg = Gotenberg()
     actions: Dict[str, List[Action]] = {}
+
+    # Used mainly by Docker
+    override: str | None = None

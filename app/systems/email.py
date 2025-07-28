@@ -2,6 +2,7 @@ import os
 
 from filters import FILTERS
 from lib import emailclient
+from lib.utils import override_str
 from models.config import Config
 
 
@@ -14,7 +15,7 @@ def email(cfg: Config):
         password=cfg.email.password,
         from_name=cfg.email.from_name,
         from_email=cfg.email.from_email,
-        templates=[os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "templates/email")],
+        templates=override_str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "templates/email"), cfg.override),
     )
 
     # Add on our filters

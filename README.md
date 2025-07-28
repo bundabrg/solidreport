@@ -145,7 +145,45 @@ This will build an email using a template in a Jinjafied [mjml format](mjml.io) 
 ![](doc/email1.png)
 
 
+## Docker Builds
 
+This can be built into a docker image. This is useful as it means you don't need to make the database and gotenberg
+visible since you can just run the docker image on the same virtual network as that they use.
+
+To build the docker image do the following:
+
+1. Clone the repo to a folder
+```shell
+git clone https://github.com/bundabrg/solidreport.git
+```
+
+2. Build the image
+```shell
+docker build solidreport -t solidreport
+```
+
+3. Create a folder to place your files in. Lets call it `sr-data`. 
+```shell
+mkdir sr-data
+```
+
+4. Place your `config.yml` file into `sr-data`. You can also create a `template` folder under there to provide
+your own custom templates. If you have a logo and `custom.css` it can also go under `sr-data`. The 
+hostname for database would be `database` and gotenberg would be `gotenberg` if you followed the solidtime
+docker-compose guide.
+
+5. Find out the network of your solidtime. In my case it is `solidtime_internal`. It might be called `docker_internal`.
+```shell
+docker network ls
+```
+
+6. Execute solidreport
+```shell
+docker run -it  \
+   --network=solidtime_internal \
+   -v ./sr-data:/sr-data \
+   solidreport generate staff_times 
+```
 
 
 ## Contributing

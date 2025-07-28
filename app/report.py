@@ -11,15 +11,18 @@ import commands
 import reports
 from filters import FILTERS
 from lib.config import load_config
+from lib.utils import override_path
 from models.config import Config
 
 
 @click.group()
 @click.option("--config", help="Configuration File", default="config.yml")
+@click.option("--override", help="Folder that contains files that override local files")
 @click.pass_context
-def cli(ctx, config):
+def cli(ctx, config, override):
     # Try load config
-    cfg = load_config(Path(config), None, Config)
+    cfg = load_config(override_path(Path(config), override), None, Config)
+    cfg.override = override
     ctx.ensure_object(dict)
     ctx.obj["config"] = cfg
 
