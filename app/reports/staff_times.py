@@ -162,7 +162,7 @@ def report(
                 "projects"
             ][r.project_name]["description"].append(r.description)
 
-        duration = (r.end - r.start).seconds
+        duration = int((r.end - r.start).total_seconds())
         members[member_name]["dates"][start_date]["clients"][r.client_name]["projects"][
             r.project_name
         ]["duration"] += duration
