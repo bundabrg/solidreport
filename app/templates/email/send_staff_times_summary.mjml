@@ -1,0 +1,15 @@
+{% extends "base_email.mjml" %}
+{% block email_body %}
+<mj-text>
+    Please find attached a summary of all staff times for the period <b>{{ start }}</b> to <b>{{ end }}</b>.
+</mj-text>
+
+<mj-table padding-left="50px" padding-right="50px" font-family="Verdana">
+    {% for member in data.members %}
+    <tr style="{% if not loop.last %}border-bottom:1px solid #ecedee;{% endif %}text-align:left;padding:15px 0;">
+        <th style="padding: 0 15px 0 0;">{{ member.name }}</th>
+        <td style="padding: 0 15px 0 0;text-align: right;">{{ member.duration|format_time }} / {{ member.duration|format_hours }} hours</td>
+    </tr>
+    {% endfor %}
+</mj-table>
+{% endblock %}

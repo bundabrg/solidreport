@@ -1,6 +1,7 @@
 click~=8.2.1
 gotenberg-client
 jinja2
+mjml-python
 pydantic
 psycopg2_binary
 ruamel.yaml

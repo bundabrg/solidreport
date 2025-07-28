@@ -1,0 +1,69 @@
+{#
+    # Base Email Template
+
+    Child templates can extend this one to have a common base design
+
+    ## Extends
+
+    - email_body: Body of the email
+
+    ## Data
+
+    - name: Recipients Name
+    - from_name: Senders Name
+    - logo: logo filename
+#}
+<mjml>
+    <mj-head>
+        <mj-attributes>
+            <mj-text font-family="Verdana" />
+        </mj-attributes>
+  	    <mj-style>
+
+        </mj-style>
+    </mj-head>
+
+    <mj-body background-color="#f0f0f0">
+        {# Logo #}
+        {% if logo %}
+        <mj-section background-color="#253746">
+            <mj-column vertical-align="middle">
+                <mj-image src="cid:{{ logo }}" width="180px" align="left"  />
+            </mj-column>
+        </mj-section>
+        {% endif %}
+
+        {# Greeting #}
+        <mj-section background-color="white">
+            <mj-column>
+                <mj-text>
+                    Greetings {{ name }},
+                </mj-text>
+
+                {% block email_body %}
+                <mj-text>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
+                    et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+                    culpa qui officia deserunt mollit anim id est laborum.
+                </mj-text>
+                {% endblock %}
+
+            </mj-column>
+        </mj-section>
+
+        {# Trailer #}
+        <mj-section background-color="white">
+            <mj-column>
+                <mj-text>
+                    Sincerely,
+                </mj-text>
+                <mj-text>
+                    {{ from_name }}
+                </mj-text>
+            </mj-column>
+        </mj-section>
+
+    </mj-body>
+</mjml>
