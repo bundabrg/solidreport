@@ -23,11 +23,13 @@ import systems
     "--start",
     help="Start Date (YYYY-MM-DD) (Default:today)",
     type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(datetime.date.today())
 )
 @click.option(
     "--end",
     help="End Date (YYYY-MM-DD) (Default:today)",
     type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(datetime.date.today())
 )
 @click.option("--project", help="Filter by project (partial match)")
 @click.option("--member", help="Filter by member (partial match)")
