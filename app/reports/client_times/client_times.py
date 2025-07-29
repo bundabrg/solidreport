@@ -239,7 +239,7 @@ def report(
                 billable_rate=(
                     r.project_billable_rate
                     if r.project_billable_rate is not None
-                    else r.organization_billable_rate
+                    else r.organization_billable_rate if r.organization_billable_rate is not None else 0
                 ),
             )
         project_data = data.projects[project_id]
