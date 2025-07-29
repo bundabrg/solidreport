@@ -1,4 +1,5 @@
-from typing import List
+from os import PathLike
+from typing import List, Sequence
 
 import jinja2
 
@@ -19,7 +20,7 @@ class Manager(object):
             password: str,
             from_name: str,
             from_email: str,
-            templates: List[str],
+            templates:  str | PathLike[str] | Sequence[str | PathLike[str]],
     ):
         self.host = host
         self.port = port

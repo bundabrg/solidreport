@@ -1,0 +1,410 @@
+{#
+    # Base Report Template
+
+    Child templates can extend this one to have a common base design
+
+    ## Blocks
+    - page_title - Title of HTML Page
+    - report_title - Title of Report
+    - report_subtitle
+    - bar_title
+    - summary_table
+    - detail
+    - pie_series_data
+    - bar_xaxis_data
+    - bar_series_data
+
+    ## Data
+
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>{% block page_title %}Title{% endblock %}</title>
+    <style>
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed,
+        figure, figcaption, footer, header, hgroup,
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            vertical-align: baseline;
+            box-sizing: border-box;
+        }
+
+
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure,
+        footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+
+        body {
+            line-height: 1;
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        blockquote, q {
+            quotes: none;
+        }
+
+        blockquote:before, blockquote:after,
+        q:before, q:after {
+            content: '';
+            content: none;
+        }
+
+        .header {
+            display: flex;
+            padding: 12px 24px;
+        }
+
+        .header p {
+
+        }
+
+        .header-logo {
+            object-fit: scale-down;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            text-align: left;
+        }
+
+        @font-face {
+            font-family: 'Outfit';
+        }
+
+        body {
+            font-family: 'Outfit', 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #18181b
+        }
+
+        table {
+            font-size: 14px;
+        }
+
+        thead {
+            border-bottom: 1px #d4d4d8 solid;
+        }
+
+        tfoot {
+            border-top: 1px #d4d4d8 solid;
+        }
+
+        table th, table tfoot td {
+            font-weight: 500;
+            padding: 6px 12px;
+            color: #18181b;
+        }
+
+        .table-wrapper table th {
+            background-color: #fafafa;
+        }
+
+        .table-wrapper {
+            border: 1px solid #d4d4d8;
+            border-radius: 8px;
+            overflow: hidden;
+            width: calc(100% - 2px)
+        }
+
+        table tr {
+            border-bottom: 1px #e4e4e7 solid;
+        }
+
+        table tr:last-of-type {
+            border-bottom: none;
+        }
+
+        table tr td {
+            font-weight: 400;
+            color: #3f3f46;
+            padding: 6px 12px;
+        }
+
+        table tr.row-top {
+            border-bottom: 0;
+            break-before: auto;
+            break-inside: avoid;
+            break-after: avoid;
+        }
+
+        table tr.row-bottom {
+            break-before: avoid;
+            break-inside: avoid;
+            break-after: auto;
+        }
+
+        table tr.row-both {
+            break-before: auto;
+            break-inside: avoid;
+            break-after: auto;
+        }
+
+        table tr.row-inner{
+            border-bottom: 0;
+            break-before: avoid;
+            break-inside: avoid;
+            break-after: avoid;
+        }
+
+        table tr.row-top td {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        table tr.row-inner td {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            font-weight: 600;
+            color: #71717a;
+        }
+
+        #pie-chart svg {
+            overflow: visible;
+        }
+
+        .data-table {
+            break-after: auto;
+        }
+
+        .no-break {
+            break-after: avoid-page;
+            break-inside: avoid-page;
+        }
+    </style>
+<!--    <script>-->
+<!--        window.status = "processing";-->
+<!--    </script>-->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    {# If a custom.css is passed in then we will read it. . Will override styles above. #}
+    {% if 'custom.css' in resources %}
+        <link href="custom.css" rel="stylesheet">
+    {% endif %}
+</head>
+<body>
+<div class="header">
+    <div style="flex-grow:1;">
+        <p class="title">{% block report_title %}report_title{% endblock %}</p>
+        <span class="subtitle">{% block report_subtitle %}report_subtitle{% endblock %}</span>
+    </div>
+    {# If a custom logo passed in, use that, else leave blank #}
+    {% if 'logo.png' in resources %}
+        <img class="header-logo" src="logo.png">
+    {% endif %}
+</div>
+
+<div class="table-wrapper">
+    <div
+        style="background-color: #fafafa; padding: 5px 14px; border-bottom: 1px #d4d4d8 solid; display: flex; gap: 20px;">
+        {% block bar_title %}
+        <div style="padding: 8px 12px; border-radius: 8px;">
+            <div style="color: #71717a; font-weight: 600;">bar_title</div>
+            <div
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">bar_title</div>
+        </div>
+        {% endblock %}
+    </div>
+    <div id="main-chart" style="width: 700px; height: 100px; margin: 20px auto;"></div>
+</div>
+
+<div style="display: flex; align-items: center; padding-top: 40px;">
+    <div style="padding: 10px 0;">
+        <div id="pie-chart" style="width: 300px; height: 190px; margin-bottom: 20px;"></div>
+    </div>
+    <div style="flex: 1 1 0%;">
+        <div class="">
+            {% block summary_table %}
+            <table style="width: 100%; ">
+                <thead>
+                <tr>
+                    <th>
+                        summary_table
+                    </th>
+                    <th style="text-align: right;white-space: nowrap;">Hours</th>
+                    <th style="text-align: right;">Duration</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <td style="font-weight: 500;color: #18181b;">
+                        summary_table
+                    </td>
+                    <td style="font-weight: 500;color: #18181b;text-align: right;">
+                        {{ 0|format_hours }}
+                    </td>
+                    <td style="font-weight: 500;color: #18181b;white-space: nowrap;text-align: right;">
+                        {{ 0|format_time }}
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+{% block detail %}
+{% endblock %}
+
+<script type="application/javascript">
+    let elementPieChart = document.getElementById("pie-chart");
+    let pieChart = echarts.init(elementPieChart, null, {
+        renderer: "svg"
+    });
+    let pieChartOptions = {
+        animation: false,
+        backgroundColor: "transparent",
+
+        series: [
+            {
+                data: [
+                    {% block pie_series_data %}
+                    {
+                        'value': '0',
+                        'name': 'pie_series',
+                        'color': '{{ 0|pick_color }}',
+                        'itemStyle': {
+                            'color': '{{ 0|pick_color }}'
+                        },
+                        'emphasis': {
+                            'itemStyle': {
+                                'color': '{{ 0|pick_color }}'
+                            }
+                        }
+                    },
+                    {% endblock %}
+                ],
+                radius: ["40%", "80%"],
+                type: "pie",
+                label: {
+                    formatter: "{d}%",
+                    overflow: "truncate"
+                }
+            }
+        ]
+    };
+    pieChart.on("finished", () => {
+        window.pieChartFinished = true;
+        // if (window.mainChartFinished && window.pieChartFinished) {
+        //     window.status = "ready";
+        // }
+    });
+    pieChart.setOption(pieChartOptions);
+
+    let elementMainChart = document.getElementById("main-chart");
+    let mainChart = echarts.init(elementMainChart, null, {
+        renderer: "svg"
+    });
+    let mainChartOptions = {
+        animation: false,
+        tooltip: {},
+        xAxis: {
+            data: [
+                {% block bar_xaxis_data %}
+                    {% for date_id, date in data.summary.dates|dictsort %}
+                        '{{ date.date.strftime("%d/%m/%Y") }}',
+                    {% endfor %}
+                {% endblock %}
+            ],
+            axisLabel: {
+                fontSize: 10,
+                fontWeight: 400,
+                color: "rgb(120, 120, 120)",
+                margin: 16,
+                fontFamily: "Outfit, sans-serif"
+            },
+            axisTick: {
+                interval: 0,
+                alignWithLabel: true
+            }
+        },
+        grid: {
+            containLabel: true,
+            left: 15,
+            top: 15,
+            right: 15,
+            bottom: 0
+        },
+        yAxis: {
+            minInterval: 1,
+            axisLabel: {
+                show: false,
+                inside: true,
+            }
+        },
+        series: [
+            {
+                name: "time",
+                type: "bar",
+                data: [
+                    {% block bar_series_data %}
+                        {% for date_id, date in data.summary.dates|dictsort %}
+                            {
+                                'name': '{{ date.duration|format_time }}',
+                                'value': '{{ date.duration|format_hours }}'
+                            },
+                        {% endfor %}
+                    {% endblock %}
+                ],
+                itemStyle: {
+                    borderColor: "#7dd3fc",
+                    color: "#7dd3fc"
+                },
+                label: {
+                    show: true,
+                    {% if data.summary.dates|length > 15 %}
+                        rotate: 90,
+                        offset: [10, 5],
+                    {% endif %}
+                    fontSize: 10,
+                    position: "top",
+                    formatter: function (params) {
+                        return params.name;
+                    }
+                }
+            }
+        ]
+    };
+    mainChart.on("finished", () => {
+        window.mainChartFinished = true;
+        // if (window.mainChartFinished && window.pieChartFinished) {
+        //     window.status = "ready";
+        // }
+    });
+    mainChart.setOption(mainChartOptions);
+</script>
+
+</body>
+</html>

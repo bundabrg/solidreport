@@ -4,20 +4,34 @@ Common Filters available to templates
 
 def format_time(input):
     # Convert seconds to xxd xxh xxm (IE: 02d 02h 33m)
-    min, sec = divmod(input, 60)
-    hour, min = divmod(min, 60)
-    day, hour = divmod(hour, 24)
-    ret = "{:02d}m".format(min)
-    if hour:
-        ret = "{:02d}h {}".format(hour, ret)
-    if day:
-        ret = "{:02d}d {}".format(day, ret)
-    return ret
+    try:
+        min, sec = divmod(input, 60)
+        hour, min = divmod(min, 60)
+        day, hour = divmod(hour, 24)
+        ret = "{:02d}m".format(min)
+        if hour:
+            ret = "{:02d}h {}".format(hour, ret)
+        if day:
+            ret = "{:02d}d {}".format(day, ret)
+        return ret
+    except:
+        return "#error"
 
 
 def format_hours(input):
     # Convert seconds to hours (IE: 6.09)
-    return "{:02.02f}".format(input / 60 / 60)
+    try:
+        return "{:02.02f}".format(input / 60 / 60)
+    except:
+        return "#error"
+
+def format_currency(input):
+    # TODO Locale update
+    # Convert from cents to dollars
+    try:
+        return "${:,.2f}".format(input/100)
+    except:
+        return "#error"
 
 
 def pick_color(input):

@@ -2,4 +2,4 @@ config.yml
 output.pdf
 logo.png
 custom.css
-override/**
+sr-data/**
