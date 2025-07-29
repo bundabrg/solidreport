@@ -168,10 +168,49 @@ This will build an email using a template in a Jinjafied [mjml format](mjml.io) 
 
 Presently the following actions are available:
 
-1. `send_staff_times_summary` - Will execute the report `staff_times` and then email it to each recipient.
-2. `send_staff_times_individual` - Will lookup any members with time in the specified period, then for each one it will
-   execute the `staff_times` report filtering for that user and use the template `staff_times_individual.html`. It will
-   then send the report to the member (unless force_recipient is set in which case it will send to that address).
+### send_staff_times_summary
+
+- Will execute the report `staff_times` and then email it to each recipient.
+
+```yaml
+description: Description of the Action being taken
+action: send_staff_times_summary
+subject: Email Subject. Can include {start}, {end}
+email_logo: Logo to use in the email.
+recipients:
+  - name: Name of person to get report
+    email: Email of person to get report
+```
+
+### send_staff_times_individual
+
+- Will lookup any members with time in the specified period, then for each one it will
+  execute the `staff_times` report filtering for that user and use the template `staff_times_individual.html`. It will
+  then send the report to the member (unless force_recipient is set in which case it will send to that address).
+
+```yaml
+description: Description of the Action being taken
+action: send_staff_times_individual
+subject: Email Subject. Can include {start}, {end}, {user_name}
+email_logo: Logo to use in the email.
+force_recipient: Send mail to this email instead of to the users own email
+```
+
+### send_client_times
+
+- Will lookup any clients with time in the specified period, then for each one it will execute
+  the `client_times` report filtering for that client. It will then send the report to all the recipients specified in
+  the action key `recipients`
+
+```yaml
+description: Description of the Action being taken
+action: send_client_times
+subject: Email Subject. Can include {start}, {end}, {client_name}
+email_logo: Logo to use in the email.
+recipients:
+  - name: Name of person to get report
+    email: Email of person to get report
+```
 
 ## Building Manually
 
@@ -208,5 +247,6 @@ The following would be useful:
 - Useful actions
 - Localization
 - Documentation (how to write a report/template for
-  example). [mkdocs-material](https://github.com/squidfunk/mkdocs-material) is what I normally like and can be published via github action to pages.
+  example). [mkdocs-material](https://github.com/squidfunk/mkdocs-material) is what I normally like and can be published
+  via github action to pages.
 - Github actions to build a docker image. Advantage of this is we don't need to make db and gotenberg visible.
