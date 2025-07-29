@@ -1,0 +1,53 @@
+# Almost any parameter that is passed can be added to defaults. Most useful really for `organization_id` and
+# perhaps `resource` to save having to add to every command.
+#defaults:
+#  organization_id: 366be5fc-28a4-46f2-8224-5a0ff5a8bb00
+#  resource:
+#    - logo.png
+#    - custom.css
+
+db:
+  host: database
+  database: solidtime
+  username: solidtime
+  password: solidtime
+
+gotenberg:
+  uri: http://gotenberg:3000
+
+email:
+  host: <hostname>>
+  port: 587
+  username: <username>>
+  password: <password>
+  from_name: <Friendly From Name>>
+  from_email: <From Email>
+
+actions:
+  summary_to_accounts:
+    - description: Send a summary to Accounts
+      action: send_staff_times_summary
+      # At a minimum `organization_id` must be in either this default or the global one above
+#      defaults:
+#        organization_id: 366be5fc-28a4-46f2-8224-5a0ff5a8bb00
+#        resource:
+#          - logo.png
+#          - custom.css
+      subject: Summary of times for period {start} - {end}
+#      email_logo: logo.png
+      recipients:
+        - name: My User
+          email: user@example.org
+    - description: Send staff their own times
+      action: send_staff_times_individual
+      # At a minimum `organization_id` must be in either this default or the global one above
+#      defaults:
+#        organization_id: 366be5fc-28a4-46f2-8224-5a0ff5a8bb00
+#        resource:
+#          - logo.png
+#          - custom.css
+      subject: Summary of your times for period {start} - {end}
+#      force_recipient: user@example.org
+#      email_logo: logo.png
+
+
