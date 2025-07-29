@@ -69,6 +69,12 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
         + list(var.get("resource", []))
     )
 
+    args["resources"] = {}
+    for r in resource:
+        r_split = r.split(":", 1)
+        r_path = r_split[1] if len(r_split) == 2 else r
+        args["resources"][r_split[0]] = cfg.sr_data.joinpath(r_path)
+
     # Lookup each staff member who has any time in this period
     try:
         with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
