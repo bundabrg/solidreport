@@ -7,5 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-WORKDIR /sr-data
-ENTRYPOINT [ "python", "/usr/src/app/app/report.py", "--override", "/sr-data" ]
+ENTRYPOINT [ "python", "/usr/src/app/app/report.py", "--sr-data", "/sr-data" ]
