@@ -1,0 +1,196 @@
+{% extends "base_report.html" %}
+{#
+    Provides a report for a client that lists all works done along with charges.
+
+    The summary shows a breakdown by project and the detail lists the work done.
+#}
+{% block page_title %}
+Time Details: {{ data.client.name }}
+{% endblock %}
+
+{% block report_title %}
+Time Details: {{ data.client.name }}
+{% endblock %}
+
+{% block report_subtitle %}
+{{ data.start.strftime("%d/%m/%Y") }} - {{ data.end.strftime("%d/%m/%Y") }}
+{% endblock %}
+
+{% block bar_title %}
+<div style="padding: 8px 12px; border-radius: 8px;">
+    <div style="color: #71717a; font-weight: 600;">Total Duration</div>
+    <div
+        style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.duration|format_time }}</div>
+</div>
+<div style="padding: 8px 12px; border-radius: 8px;">
+    <div style="color: #71717a; font-weight: 600;">Total Cost</div>
+    <div
+        style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.cost|format_currency }}</div>
+</div>
+{% endblock %}
+
+{% block pie_series_data %}
+{% for project_id, project in data.projects.items()|sort(attribute='1.name') %}
+    {
+        'value': '{{ project.duration|format_hours }}',
+        'name': '{{ project.name }}',
+        'color': '{{ loop.index0|pick_color }}',
+        'itemStyle': {
+            'color': '{{ loop.index0|pick_color }}'
+        },
+        'emphasis': {
+            'itemStyle': {
+                'color': '{{ loop.index0|pick_color }}'
+            }
+        }
+    },
+{% endfor %}
+{% endblock %}
+
+{% block summary_table %}
+<table style="width: 100%; ">
+    <thead>
+    <tr>
+        <th>
+            Name
+        </th>
+        <th style="text-align: right;">Duration</th>
+        <th style="text-align: right;white-space: nowrap;">Hours</th>
+        <th style="text-align: right;white-space: nowrap;">Rate</th>
+        <th style="text-align: right;white-space: nowrap;">Total</th>
+    </tr>
+    </thead>
+    {% for project_id, project in data.projects.items()|sort(attribute='1.name') %}
+        <tr>
+            <td style="display: flex; align-items: center;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ loop.index0|pick_color }};">
+                </div>
+                <span style="padding-left: 8px;">
+                    {{ project.name }}
+                </span>
+            </td>
+            <td style="text-align: right;white-space: nowrap;">
+                {{ project.duration|format_time }}
+            </td>
+            <td style="text-align: right;">
+                {{ project.duration|format_hours }}
+            </td>
+            <td style="text-align: right;">
+                {{ project.billable_rate|format_currency }}
+            </td>
+            <td style="text-align: right;">
+                {{ project.cost|format_currency }}
+            </td>
+        </tr>
+    {% endfor %}
+    <tfoot>
+    <tr>
+        <td style="font-weight: 500;color: #18181b;">
+            Total
+        </td>
+        <td style="font-weight: 500;color: #18181b;white-space: nowrap;text-align: right;">
+            {{ data.duration|format_time }}
+        </td>
+        <td style="font-weight: 500;color: #18181b;text-align: right;">
+            {{ data.duration|format_hours }}
+        </td>
+        <td></td>
+        <td style="font-weight: 500;color: #18181b;text-align: right;">
+            {{ data.cost|format_currency }}
+        </td>
+    </tr>
+    </tfoot>
+</table>
+{% endblock %}
+
+{% block detail %}
+{% for project_id, project in data.projects.items()|sort(attribute='1.name') %}
+<div class="data-table">
+    <h2 class="no-break"
+        style="padding-top: 16px; padding-bottom: 8px; font-size: 16px; font-weight: 600; padding-left: 6px; color: #3f3f46;">
+        <span style="color: #a1a1aa;">
+            {{ project.name }}:
+        </span>
+    </h2>
+
+    <div class="table-wrapper">
+        <div
+            style="background-color: #fafafa; padding: 5px 14px; display: flex; gap: 20px;">
+            <div style="padding: 8px 12px; border-radius: 8px;">
+                <div style="color: #71717a; font-weight: 600;">Duration</div>
+                <div
+                    style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ project.duration|format_time }}</div>
+            </div>
+            <div style="padding: 8px 12px; border-radius: 8px;">
+                <div style="color: #71717a; font-weight: 600;">Cost</div>
+                <div
+                    style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ project.cost|format_currency }}</div>
+            </div>
+        </div>
+        <div>
+            <table style="width: 100%;">
+                <thead>
+                <tr style="border-top: 1px #d4d4d8 solid;">
+                    <th style="text-align: center;width: 75px;">Date</th>
+                    <th>Details</th>
+                    <th style="text-align: right;width: 75px;">Duration</th>
+                    <th style="text-align: right;width: 75px;text-wrap: nowrap;">Hours</th>
+                    <th style="text-align: right;width: 75px;">Rate</th>
+                    <th style="text-align: right;width: 75px;">Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for date_id, date in project.dates|dictsort %}
+                    {# Figure out the rowspan for the date column #}
+                    {% set ns = namespace (records = date.members|length) %}
+
+                    {% for member_id, member in date.members.items()|sort(attribute='1.name') %}
+                        {% if loop.first and loop.last %}
+                            <tr class="row-both">
+                        {% elif loop.first %}
+                            <tr class="row-top">
+                        {% elif loop.last %}
+                            <tr class="row-bottom">
+                        {% else %}
+                            <tr class="row-inner">
+                        {% endif %}
+
+                                {% if loop.first %}
+                                    <td rowspan="{{ ns.records }}" style="overflow-wrap: break-word; min-width: 120px; text-align: center;padding-bottom: 6px;">
+                                        {{ date.date.strftime("%d/%m/%Y") }}
+                                    </td>
+                                {% endif %}
+                                <td style="overflow-wrap: break-word; min-width: 75px;">
+                                    {{ member.name }}
+                                    {% if member.time_entries|length > 0 %}
+                                    <br>
+                                    <ul style="margin-left: 25px;">
+                                        {% for time_entry in member.time_entries %}
+                                        {% if time_entry.description|length > 0 %}
+                                            <li style="list-style-type: disc;">{{ time_entry.description }}</li>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </td>
+                                {% if loop.first %}
+                                    <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ date.duration|format_time }}</td>
+                                    <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ date.duration|format_hours }}</td>
+                                    <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ project.billable_rate|format_currency }}</td>
+                                    <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ date.cost|format_currency }}</td>
+                                {% else %}
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                {% endif %}
+                            </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

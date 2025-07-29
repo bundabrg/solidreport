@@ -1,4 +1,5 @@
 import uuid
+from pathlib import Path
 from typing import Dict, List, Any
 
 from pydantic import BaseModel, ConfigDict
@@ -37,5 +38,5 @@ class Config(BaseModel):
     gotenberg: Gotenberg = Gotenberg()
     actions: Dict[str, List[Action]] = {}
 
-    # Used mainly by Docker
-    override: str | None = None
+    # Location for output, additional templates, resources
+    sr_data: Path = Path(".")

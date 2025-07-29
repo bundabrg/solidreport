@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 import jinja2 as jinja2
 from email.mime.application import MIMEApplication
 from email.mime.audio import MIMEAudio
@@ -60,18 +62,18 @@ class Email(object):
                 pass
 
             # Try to attach html template
-            try:
-                msg_html = MIMEMultipart('related')
-                msg_html.attach(
-                    MIMEText(
-                        mjml2html(self._manager.jinja.get_template("{}.mjml".format(self.template)).render(
-                            **self.template_args)),
-                        'html', 'UTF-8')
-                )
+            msg_html = MIMEMultipart('related')
+            msg_html.attach(
+                MIMEText(
+                    mjml2html(self._manager.jinja.get_template("{}.mjml".format(self.template)).render(
+                        **self.template_args)),
+                    'html', 'UTF-8')
+            )
 
-                # Attach embedded files
-                data: MIMENonMultipart
-                for a in self.embed:
+            # Attach embedded files
+            data: MIMENonMultipart
+            for a in self.embed:
+                try:
                     with open(a.path, 'rb') as f:
                         if a.typeof == AttachType.IMAGE:
                             data = MIMEImage(f.read())
@@ -83,11 +85,11 @@ class Email(object):
                         data.add_header("Content-ID", "<{}>".format(a.name))
 
                     msg_html.attach(data)
+                except IOError:
+                    # Failed Embed
+                    pass
 
-                msg_alternative.attach(msg_html)
-            except IOError:
-                # None found
-                pass
+            msg_alternative.attach(msg_html)
 
         # Attach files
         for a in self.attach:

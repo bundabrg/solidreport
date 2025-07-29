@@ -5,7 +5,7 @@
 </mj-text>
 
 <mj-table padding-left="50px" padding-right="50px" font-family="Verdana">
-    {% for member in data.members %}
+    {% for member_id, member in data.members.items()|sort(attribute='1.name') %}
     <tr style="{% if not loop.last %}border-bottom:1px solid #ecedee;{% endif %}text-align:left;padding:15px 0;">
         <th style="padding: 0 15px 0 0;">{{ member.name }}</th>
         <td style="padding: 0 15px 0 0;text-align: right;">{{ member.duration|format_time }} / {{ member.duration|format_hours }} hours</td>

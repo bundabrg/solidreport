@@ -1,15 +1,16 @@
 {% extends "base_report.html" %}
 {#
-    Provides a summary report showing a breakdown of time by staff, then a detailed section showing the hours
-    worked each day.
+    Provides a report with a summary breakdown by project and a detailed section showing times per day.
+
+    This is useful to show staff their own times broken up by project.
 #}
 
 {% block page_title %}
-Staff Times
+Your Times
 {% endblock %}
 
 {% block report_title %}
-Staff Times
+Your Times
 {% endblock %}
 
 {% block report_subtitle %}
@@ -25,10 +26,10 @@ Staff Times
 {% endblock %}
 
 {% block pie_series_data %}
-{% for member_id, member in data.members.items()|sort(attribute='1.name') %}
+{% for project_id, project in data.summary.projects.items()|sort(attribute='1.name') %}
     {
-        'value': '{{ member.duration|format_hours }}',
-        'name': '{{ member.name }}',
+        'value': '{{ project.duration|format_hours }}',
+        'name': '{{ project.name }}',
         'color': '{{ loop.index0|pick_color }}',
         'itemStyle': {
             'color': '{{ loop.index0|pick_color }}'
@@ -46,43 +47,30 @@ Staff Times
 <table style="width: 100%; ">
     <thead>
     <tr>
-        <th>
-            Name
-        </th>
+        <th>Client</th>
+        <th>Project</th>
         <th style="text-align: right;white-space: nowrap;">Hours</th>
         <th style="text-align: right;">Duration</th>
     </tr>
     </thead>
-    {% for member_id, member in data.members.items()|sort(attribute='1.name') %}
+    {% for project_id, project in data.summary.projects.items()|sort(attribute='1.client_name,1.name') %}
         <tr>
             <td style="display: flex; align-items: center;">
                 <div style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ loop.index0|pick_color }};">
                 </div>
                 <span style="padding-left: 8px;">
-                    {{ member.name }}
+                    {{ project.client_name }}
                 </span>
             </td>
+            <td>{{ project.name }}</td>
             <td style="text-align: right;">
-                {{ member.duration|format_hours }}
+                {{ project.duration|format_hours }}
             </td>
             <td style="text-align: right;white-space: nowrap;">
-                {{ member.duration|format_time }}
+                {{ project.duration|format_time }}
             </td>
         </tr>
     {% endfor %}
-    <tfoot>
-    <tr>
-        <td style="font-weight: 500;color: #18181b;">
-            Total
-        </td>
-        <td style="font-weight: 500;color: #18181b;text-align: right;">
-            {{ data.duration|format_hours }}
-        </td>
-        <td style="font-weight: 500;color: #18181b;white-space: nowrap;text-align: right;">
-            {{ data.duration|format_time }}
-        </td>
-    </tr>
-    </tfoot>
 </table>
 {% endblock %}
 
