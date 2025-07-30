@@ -1,5 +1,5 @@
 from os import PathLike
-from typing import List, Sequence
+from typing import Sequence
 
 import jinja2
 

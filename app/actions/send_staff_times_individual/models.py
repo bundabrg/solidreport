@@ -1,6 +1,4 @@
-from typing import List, Dict, Any
-
-from pydantic import BaseModel
+from typing import Dict, Any
 
 from models import config
 

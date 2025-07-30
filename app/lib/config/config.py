@@ -5,7 +5,7 @@ from typing import Optional, Type, MutableMapping, List, TypeVar
 
 from ruamel.yaml import YAML
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,10 @@ def load_config(path: Path | List[Path], name: str | None, model: Type[T]) -> T:
         if yaml is not None:
             if name is not None:
                 # Merge common and the specific app config
-                data = merge_dicts(yaml["common"] if "common" in yaml else {}, yaml[name] if name in yaml else {})
+                data = merge_dicts(
+                    yaml["common"] if "common" in yaml else {},
+                    yaml[name] if name in yaml else {},
+                )
             else:
                 data = yaml
 
@@ -75,10 +78,13 @@ def get_config(section: str) -> T:
     if "APP_CONFIG" in os.environ:
         config_path = [Path(s) for s in os.environ.get("APP_CONFIG").split(",")]
     else:
-        config_path = [x for x in [
-            find_upwards(Path.cwd(), Path("config", "default.yml")),
-            find_upwards(Path.cwd(), Path("config", "config.yml"))
+        config_path = [
+            x
+            for x in [
+                find_upwards(Path.cwd(), Path("config", "default.yml")),
+                find_upwards(Path.cwd(), Path("config", "config.yml")),
+            ]
+            if x is not None
         ]
-        if x is not None]
 
     return load_config(config_path, section, T)

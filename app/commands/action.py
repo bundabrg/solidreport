@@ -1,6 +1,5 @@
 import click
 
-import reports
 from actions import ACTIONS
 from models.config import Config
 

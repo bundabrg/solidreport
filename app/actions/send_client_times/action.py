@@ -1,11 +1,9 @@
 import datetime
-import sys
 import tempfile
-from psycopg2 import Error
-from typing import List, Dict
+from typing import Dict
 
+from psycopg2 import Error
 from psycopg2.extras import NamedTupleCursor
-staff_times_summary
 import systems
 from lib import emailclient
 from models.config import Config

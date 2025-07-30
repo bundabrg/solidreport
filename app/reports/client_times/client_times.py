@@ -4,7 +4,6 @@ project
 """
 
 import datetime
-import sys
 import tempfile
 from math import ceil, floor
 from pathlib import Path
@@ -76,7 +75,9 @@ def find_client(db, search: str) -> UUID | None:
 @click.option("--project-filter", help="Filter by project (partial match)")
 @click.option("--member-filter", help="Filter by member (partial match)")
 @click.option(
-    "--resource", help="Add a resource readable by the template ([name:]file)", multiple=True
+    "--resource",
+    help="Add a resource readable by the template ([name:]file)",
+    multiple=True,
 )
 @click.option(
     "--debug", help="Write the html file out as well", default=False, is_flag=True
@@ -142,7 +143,7 @@ def generate(
         args["resources"][r_split[0]] = cfg.sr_data.joinpath(r_path)
 
     # Map output under sr-data
-    args['output'] = str(cfg.sr_data.joinpath(args['output']))
+    args["output"] = str(cfg.sr_data.joinpath(args["output"]))
 
     print(f"Generating {args['output']} from {args['start']} to {args['end']}")
 
@@ -239,7 +240,11 @@ def report(
                 billable_rate=(
                     r.project_billable_rate
                     if r.project_billable_rate is not None
-                    else r.organization_billable_rate if r.organization_billable_rate is not None else 0
+                    else (
+                        r.organization_billable_rate
+                        if r.organization_billable_rate is not None
+                        else 0
+                    )
                 ),
             )
         project_data = data.projects[project_id]

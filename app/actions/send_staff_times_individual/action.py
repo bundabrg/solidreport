@@ -1,8 +1,8 @@
 import datetime
 import tempfile
-from psycopg2 import Error
-from typing import List, Dict
+from typing import Dict
 
+from psycopg2 import Error
 from psycopg2.extras import NamedTupleCursor
 
 import systems
@@ -90,9 +90,9 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
             cursor.execute(
                 sql,
                 {
-                    "organization_id": args['organization_id'],
-                    "start": args['start'].isoformat(),
-                    "end": (args['end'] + datetime.timedelta(days=1)).isoformat(),
+                    "organization_id": args["organization_id"],
+                    "start": args["start"].isoformat(),
+                    "end": (args["end"] + datetime.timedelta(days=1)).isoformat(),
                 },
             )
             records = cursor.fetchall()
@@ -118,7 +118,11 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
             )
 
             # Email to recipient
-            email_address = action_cfg.force_recipient if action_cfg.force_recipient is not None else r.user_email
+            email_address = (
+                action_cfg.force_recipient
+                if action_cfg.force_recipient is not None
+                else r.user_email
+            )
             print("    - Sending Times for {} to {}".format(r.user_name, email_address))
 
             email = email_manager.new()
@@ -129,8 +133,8 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
                 "name": r.user_name,
                 "from_name": action_cfg.from_name,
                 "logo": "logo.png" if email_logo else None,
-                "start": args['start'].strftime("%d/%m/%Y"),
-                "end": args['end'].strftime("%d/%m/%Y"),
+                "start": args["start"].strftime("%d/%m/%Y"),
+                "end": args["end"].strftime("%d/%m/%Y"),
                 "data": data,
             }
             if email_logo:

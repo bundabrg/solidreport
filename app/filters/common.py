@@ -2,6 +2,7 @@
 Common Filters available to templates
 """
 
+
 def format_time(input):
     # Convert seconds to xxd xxh xxm (IE: 02d 02h 33m)
     try:
@@ -25,11 +26,12 @@ def format_hours(input):
     except:
         return "#error"
 
+
 def format_currency(input):
     # TODO Locale update
     # Convert from cents to dollars
     try:
-        return "${:,.2f}".format(input/100)
+        return "${:,.2f}".format(input / 100)
     except:
         return "#error"
 

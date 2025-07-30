@@ -1,6 +1,6 @@
 import datetime
 import tempfile
-from typing import List, Dict
+from typing import Dict
 
 import systems
 from lib import emailclient
@@ -100,7 +100,9 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
             if email_logo:
                 email.embed.append(
                     emailclient.File(
-                        str(cfg.sr_data .joinpath(email_logo)), "logo.png", typeof=email.AttachType.IMAGE
+                        str(cfg.sr_data.joinpath(email_logo)),
+                        "logo.png",
+                        typeof=email.AttachType.IMAGE,
                     )
                 )
 

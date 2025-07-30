@@ -4,12 +4,10 @@ project
 """
 
 import datetime
-import sys
 import tempfile
 from math import ceil, floor
 from pathlib import Path
 from typing import Dict
-from uuid import UUID
 
 import click
 from gotenberg_client.options import PageMarginsType, Measurement, MeasurementUnitType
