@@ -132,13 +132,11 @@ Your Times
                                     {% endif %}
                                     <td style="overflow-wrap: break-word; min-width: 75px;">
                                         {{ client.name }} - {{ project.name }}
-                                        {% if project.time_entries|length > 0 %}
+                                        {% if project.descriptions|length > 0 %}
                                             <br>
                                             <ul style="margin-left: 25px;">
-                                                {% for time_entry in project.time_entries %}
-                                                    {% if time_entry.description|length > 0 %}
-                                                        <li style="list-style-type: disc;">{{ time_entry.description }}</li>
-                                                    {% endif %}
+                                                {% for description in project.descriptions %}
+                                                    <li style="list-style-type: disc;">{{ description }}</li>
                                                 {% endfor %}
                                             </ul>
                                         {% endif %}
