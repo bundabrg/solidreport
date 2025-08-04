@@ -16,6 +16,7 @@ class ProjectDataModel(BaseModel):
     name: str
     duration: int = 0
     time_entries: List[TimeEntryDataModel] = []
+    descriptions: List[str] = []
 
 
 class ClientDataModel(BaseModel):

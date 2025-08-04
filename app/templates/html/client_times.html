@@ -162,13 +162,11 @@ Time Details: {{ data.client.name }}
                                 {% endif %}
                                 <td style="overflow-wrap: break-word; min-width: 75px;">
                                     {{ member.name }}
-                                    {% if member.time_entries|length > 0 %}
+                                    {% if member.descriptions|length > 0 %}
                                     <br>
                                     <ul style="margin-left: 25px;">
-                                        {% for time_entry in member.time_entries %}
-                                        {% if time_entry.description|length > 0 %}
-                                            <li style="list-style-type: disc;">{{ time_entry.description }}</li>
-                                        {% endif %}
+                                        {% for description in member.descriptions %}
+                                            <li style="list-style-type: disc;">{{ description }}</li>
                                         {% endfor %}
                                     </ul>
                                     {% endif %}

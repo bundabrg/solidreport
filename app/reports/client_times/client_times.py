@@ -272,6 +272,10 @@ def report(
             )
         )
 
+        # Add non duplicated descriptions
+        if r.description not in member_data.descriptions:
+            member_data.descriptions.append(r.description)
+
         member_data.duration += duration
         date_data.duration += duration
         project_data.duration += duration
