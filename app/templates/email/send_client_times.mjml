@@ -17,9 +17,11 @@
         <th style="padding: 0 15px 0 0;">Duration</th>
         <td style="padding: 0 15px 0 0;text-align: right;">{{ data.duration|format_time }} / {{ data.duration|format_hours }} hours</td>
     </tr>
+    {% if data.cost > 0 %}
     <tr style="text-align:left;padding:15px 0;">
         <th style="padding: 0 15px 0 0;">Cost</th>
         <td style="padding: 0 15px 0 0;text-align: right;">{{ data.cost|format_currency }}</td>
     </tr>
+    {% endif %}
 </mj-table>
 {% endblock %}

@@ -242,7 +242,7 @@ def report(
                     if r.project_billable_rate is not None
                     else (
                         r.organization_billable_rate
-                        if r.organization_billable_rate is not None
+                        if r.billable and r.organization_billable_rate is not None
                         else 0
                     )
                 ),
