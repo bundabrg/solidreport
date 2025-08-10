@@ -22,11 +22,13 @@ Time Details: {{ data.client.name }}
     <div
         style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.duration|format_time }}</div>
 </div>
+{% if data.cost > 0 %}
 <div style="padding: 8px 12px; border-radius: 8px;">
     <div style="color: #71717a; font-weight: 600;">Total Cost</div>
     <div
         style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.cost|format_currency }}</div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block pie_series_data %}
@@ -56,8 +58,10 @@ Time Details: {{ data.client.name }}
         </th>
         <th style="text-align: right;">Duration</th>
         <th style="text-align: right;white-space: nowrap;">Hours</th>
+        {% if data.cost > 0 %}
         <th style="text-align: right;white-space: nowrap;">Rate</th>
         <th style="text-align: right;white-space: nowrap;">Total</th>
+        {% endif %}
     </tr>
     </thead>
     {% for project_id, project in data.projects.items()|sort(attribute='1.name') %}
@@ -75,12 +79,14 @@ Time Details: {{ data.client.name }}
             <td style="text-align: right;">
                 {{ project.duration|format_hours }}
             </td>
+            {% if data.cost > 0 %}
             <td style="text-align: right;">
                 {{ project.billable_rate|format_currency }}
             </td>
             <td style="text-align: right;">
                 {{ project.cost|format_currency }}
             </td>
+            {% endif %}
         </tr>
     {% endfor %}
     <tfoot>
@@ -94,10 +100,12 @@ Time Details: {{ data.client.name }}
         <td style="font-weight: 500;color: #18181b;text-align: right;">
             {{ data.duration|format_hours }}
         </td>
+        {% if data.cost > 0 %}
         <td></td>
         <td style="font-weight: 500;color: #18181b;text-align: right;">
             {{ data.cost|format_currency }}
         </td>
+        {% endif %}
     </tr>
     </tfoot>
 </table>
@@ -121,11 +129,13 @@ Time Details: {{ data.client.name }}
                 <div
                     style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ project.duration|format_time }}</div>
             </div>
+            {% if data.cost > 0 %}
             <div style="padding: 8px 12px; border-radius: 8px;">
                 <div style="color: #71717a; font-weight: 600;">Cost</div>
                 <div
                     style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ project.cost|format_currency }}</div>
             </div>
+            {% endif %}
         </div>
         <div>
             <table style="width: 100%;">
@@ -135,8 +145,10 @@ Time Details: {{ data.client.name }}
                     <th>Details</th>
                     <th style="text-align: right;width: 75px;">Duration</th>
                     <th style="text-align: right;width: 75px;text-wrap: nowrap;">Hours</th>
+                    {% if data.cost > 0 %}
                     <th style="text-align: right;width: 75px;">Rate</th>
                     <th style="text-align: right;width: 75px;">Total</th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody>
@@ -174,13 +186,17 @@ Time Details: {{ data.client.name }}
                                 {% if loop.first %}
                                     <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ date.duration|format_time }}</td>
                                     <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ date.duration|format_hours }}</td>
+                                    {% if data.cost > 0 %}
                                     <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ project.billable_rate|format_currency }}</td>
                                     <td style="overflow-wrap: break-word; min-width: 75px;white-space: nowrap; text-align: right;">{{ date.cost|format_currency }}</td>
+                                    {% endif %}
                                 {% else %}
                                     <td></td>
                                     <td></td>
+                                    {% if data.cost > 0 %}
                                     <td></td>
                                     <td></td>
+                                    {% endif %}
                                 {% endif %}
                             </tr>
                     {% endfor %}
