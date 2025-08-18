@@ -160,7 +160,7 @@ def report(
                      JOIN organizations ON (te.organization_id = organizations.id)
                 WHERE te.organization_id = %(organization_id)s
                     AND te.start >= %(start)s
-                    AND te.end < %(end)s
+                    AND te.start < %(end)s
                     { "AND clients.name ilike %(client)s" if client_filter else "" }
                     { "AND projects.name ilike %(project)s" if project_filter else "" }
                     { "AND users.name ilike %(member)s" if member_filter else "" }
