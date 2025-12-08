@@ -22,6 +22,11 @@ Time Details: {{ data.client.name }}
     <div
         style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.duration|format_time }}</div>
 </div>
+<div style="padding: 8px 12px; border-radius: 8px;">
+    <div style="color: #71717a; font-weight: 600;">Total Hours</div>
+    <div
+        style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.duration|format_hours }}</div>
+</div>
 {% if data.cost > 0 %}
 <div style="padding: 8px 12px; border-radius: 8px;">
     <div style="color: #71717a; font-weight: 600;">Total Cost</div>
@@ -128,6 +133,11 @@ Time Details: {{ data.client.name }}
                 <div style="color: #71717a; font-weight: 600;">Duration</div>
                 <div
                     style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ project.duration|format_time }}</div>
+            </div>
+            <div style="padding: 8px 12px; border-radius: 8px;">
+                <div style="color: #71717a; font-weight: 600;">Hours</div>
+                <div
+                    style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ project.duration|format_hours }}</div>
             </div>
             {% if data.cost > 0 %}
             <div style="padding: 8px 12px; border-radius: 8px;">

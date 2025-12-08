@@ -22,6 +22,11 @@ Staff Times
     <div
         style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.duration|format_time }}</div>
 </div>
+<div style="padding: 8px 12px; border-radius: 8px;">
+    <div style="color: #71717a; font-weight: 600;">Total Hours</div>
+    <div
+        style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ data.duration|format_hours }}</div>
+</div>
 {% endblock %}
 
 {% block pie_series_data %}
@@ -103,6 +108,11 @@ Staff Times
                 <div style="color: #71717a; font-weight: 600;">Duration</div>
                 <div
                     style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ member.duration|format_time }}</div>
+            </div>
+            <div style="padding: 8px 12px; border-radius: 8px;">
+                <div style="color: #71717a; font-weight: 600;">Hours</div>
+                <div
+                    style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ member.duration|format_hours }}</div>
             </div>
         </div>
         <div>
