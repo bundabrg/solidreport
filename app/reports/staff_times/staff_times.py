@@ -163,7 +163,7 @@ def report(
                      LEFT JOIN projects ON (te.project_id = projects.id)
                      LEFT JOIN clients ON (te.client_id = clients.id)
                      JOIN organizations ON (te.organization_id = organizations.id)
-                WHERE te.organization_id = %(organization_id)s0a318749-0848-4377-a038-9d8802bb0182
+                WHERE te.organization_id = %(organization_id)s
                     AND te.start >= %(start)s
                     AND te.start < %(end)s
                     { "AND clients.name ilike %(client)s" if client_filter else "" }
