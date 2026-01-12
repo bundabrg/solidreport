@@ -78,6 +78,8 @@ def generate(
     env = systems.jinja(cfg)
     gotenberg = systems.gotenberg(cfg)
 
+
+
     # Apply defaults
     args = {
         "output": output,
@@ -145,11 +147,14 @@ def report(
     resources: Dict[str, Path] = None,
     debug=False,
 ):
+    start_datetime = datetime.datetime.combine(start, datetime.time.min).astimezone(datetime.UTC)
+    end_datetime  = datetime.datetime.combine(end, datetime.time.min).astimezone(datetime.UTC)
+
     resources = resources or {}
     try:
         with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
             sql = f"""
-                SELECT te.start, te.end, te.description, users.id as user_id, users.name as user_name,
+                SELECT te.start::timestamptz, te.end::timestamptz, te.description, users.id as user_id, users.name as user_name,
                      clients.id as client_id, clients.name as client_name, 
                      projects.id as project_id, projects.name as project_name, projects.billable_rate as project_billable_rate,
                      te.billable_rate, te.billable, organizations.billable_rate as organization_billable_rate
@@ -171,8 +176,8 @@ def report(
                 sql,
                 {
                     "organization_id": organization_id,
-                    "start": start.isoformat(),
-                    "end": (end + datetime.timedelta(days=1)).isoformat(),
+                    "start": start_datetime.isoformat(),
+                    "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
                     "project": "%{}%".format(project_filter),
                     "member": "%{}%".format(member_filter),
                     "client": "%{}%".format(client_filter),
@@ -194,7 +199,7 @@ def report(
             data.members[r.user_id] = MemberDataModel(name=r.user_name)
         member_data = data.members[r.user_id]
 
-        start_date = r.start.date()
+        start_date = r.start.astimezone().date()
 
         if start_date not in member_data.dates:
             member_data.dates[start_date] = DateDataModel(date=start_date)
