@@ -44,6 +44,7 @@ gotenberg:
 docker run -it  \
    --network=solidtime_internal \
    -v ./sr-data:/sr-data \
+   -v /etc/localtime:/etc/localtime:ro \
    solidreport generate staff_times --start <start-date> --end <end-date>
 ```
 
