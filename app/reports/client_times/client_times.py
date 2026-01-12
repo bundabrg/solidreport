@@ -195,7 +195,7 @@ def report(
             client_name = records.client_name if records else "(No Client)"
 
             sql = f"""
-                SELECT te.start, te.end, te.description, users.id as user_id, users.name as user_name,
+                SELECT te.start::timestamptz, te.end::timestamptz, te.description, users.id as user_id, users.name as user_name,
                      clients.id as client_id, clients.name as client_name, 
                      projects.id as project_id, projects.name as project_name, projects.billable_rate as project_billable_rate,
                      te.billable_rate, te.billable, organizations.billable_rate as organization_billable_rate
