@@ -78,6 +78,8 @@ def generate(
     env = systems.jinja(cfg)
     gotenberg = systems.gotenberg(cfg)
 
+
+
     # Apply defaults
     args = {
         "output": output,
@@ -145,6 +147,9 @@ def report(
     resources: Dict[str, Path] = None,
     debug=False,
 ):
+    start_datetime = datetime.datetime.combine(start, datetime.time.min).astimezone(datetime.UTC)
+    end_datetime  = datetime.datetime.combine(end, datetime.time.min).astimezone(datetime.UTC)
+
     resources = resources or {}
     try:
         with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
@@ -158,7 +163,7 @@ def report(
                      LEFT JOIN projects ON (te.project_id = projects.id)
                      LEFT JOIN clients ON (te.client_id = clients.id)
                      JOIN organizations ON (te.organization_id = organizations.id)
-                WHERE te.organization_id = %(organization_id)s
+                WHERE te.organization_id = %(organization_id)s0a318749-0848-4377-a038-9d8802bb0182
                     AND te.start >= %(start)s
                     AND te.start < %(end)s
                     { "AND clients.name ilike %(client)s" if client_filter else "" }
@@ -171,8 +176,8 @@ def report(
                 sql,
                 {
                     "organization_id": organization_id,
-                    "start": start.isoformat(),
-                    "end": (end + datetime.timedelta(days=1)).isoformat(),
+                    "start": start_datetime.isoformat(),
+                    "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
                     "project": "%{}%".format(project_filter),
                     "member": "%{}%".format(member_filter),
                     "client": "%{}%".format(client_filter),
@@ -194,7 +199,7 @@ def report(
             data.members[r.user_id] = MemberDataModel(name=r.user_name)
         member_data = data.members[r.user_id]
 
-        start_date = r.start.date()
+        start_date = r.start.astimezone().date()
 
         if start_date not in member_data.dates:
             member_data.dates[start_date] = DateDataModel(date=start_date)

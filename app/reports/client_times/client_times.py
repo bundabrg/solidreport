@@ -172,6 +172,9 @@ def report(
     resources: Dict[str, Path] = None,
     debug=False,
 ):
+    start_datetime = datetime.datetime.combine(start, datetime.time.min).astimezone(datetime.UTC)
+    end_datetime = datetime.datetime.combine(end, datetime.time.min).astimezone(datetime.UTC)
+
     resources = resources or {}
     try:
         with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
@@ -213,8 +216,8 @@ def report(
                 sql,
                 {
                     "organization_id": organization_id,
-                    "start": start.isoformat(),
-                    "end": (end + datetime.timedelta(days=1)).isoformat(),
+                    "start": start_datetime.isoformat(),
+                    "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
                     "project": "%{}%".format(project_filter),
                     "member": "%{}%".format(member_filter),
                     "client": client_id,
@@ -249,7 +252,7 @@ def report(
             )
         project_data = data.projects[project_id]
 
-        start_date = r.start.date()
+        start_date = r.start.astimezone().date()
 
         if start_date not in project_data.dates:
             project_data.dates[start_date] = DateDataModel(date=start_date)
