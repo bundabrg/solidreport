@@ -19,20 +19,20 @@ def cmd(ctx, action, var):
 
     cfg: Config = ctx.obj["config"]
 
-    vars = {}
-    for k, v in [vv.split("=") for vv in var]:
-        if k not in vars:
-            vars[k] = v
+    variables = {}
+    for k, v in [vv.split("=", 1) for vv in var]:
+        if k not in variables:
+            variables[k] = v
         else:
-            if not isinstance(vars[k], list):
-                vars[k] = [vars[k]]
+            if not isinstance(variables[k], list):
+                variables[k] = [variables[k]]
 
-            vars[k].append(v)
+            variables[k].append(v)
 
     # Make sure we have an action group
     if action not in cfg.actions:
         print(f"Can't find action group '{action}' in config file")
-        return
+        ctx.exit(1)
 
     print(f"Executing action group '{action}'")
 
@@ -40,10 +40,10 @@ def cmd(ctx, action, var):
     for step in cfg.actions.get(action):
         if step.action not in ACTIONS:
             print(f"  - Unable to find an action called '{step.action}'")
-            return
+            ctx.exit(1)
 
         action_def = ACTIONS.get(step.action)
         action_cfg = action_def["model"](**step.model_dump())
 
         print(f"  - Executing step: {step.description}")
-        action_def["execute"](cfg, action_cfg, vars)
+        action_def["execute"](cfg, action_cfg, variables)

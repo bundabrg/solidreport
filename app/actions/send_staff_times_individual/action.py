@@ -2,7 +2,6 @@ import datetime
 import tempfile
 from typing import Dict
 
-from psycopg2 import Error
 from psycopg2.extras import NamedTupleCursor
 
 import systems
@@ -76,32 +75,27 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
         args["resources"][r_split[0]] = cfg.sr_data.joinpath(r_path)
 
     # Lookup each staff member who has any time in this period
-    try:
-        with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
-            sql = """
-                SELECT DISTINCT users.id as user_id, users.name as user_name, users.email as user_email
-                FROM users JOIN members ON (members.user_id = users.id)
-                    JOIN time_entries te ON (te.member_id = members.id)
-                WHERE te.organization_id = %(organization_id)s
-                    AND te.start >= %(start)s
-                    AND te.end < %(end)s
-                  """
+    with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
+        sql = f"""
+            SELECT DISTINCT users.id as user_id, users.name as user_name, users.email as user_email
+            FROM users JOIN members ON (members.user_id = users.id)
+                JOIN time_entries te ON (te.member_id = members.id)
+            WHERE te.organization_id = %(organization_id)s
+                AND te.start >= %(start)s
+                AND te.end < %(end)s
+                AND te.end is not null
+                {systems.time_work_filter(db)}
+              """
 
-            cursor.execute(
-                sql,
-                {
-                    "organization_id": args["organization_id"],
-                    "start": args["start"].isoformat(),
-                    "end": (args["end"] + datetime.timedelta(days=1)).isoformat(),
-                },
-            )
-            records = cursor.fetchall()
-
-    except (Exception, Error) as error:
-        print("Error while connecting to PostgreSQL", error)
-        return
-    finally:
-        cursor.close()
+        cursor.execute(
+            sql,
+            {
+                "organization_id": args["organization_id"],
+                "start": args["start"].isoformat(),
+                "end": (args["end"] + datetime.timedelta(days=1)).isoformat(),
+            },
+        )
+        records = cursor.fetchall()
 
     for r in records:
         with tempfile.NamedTemporaryFile() as tmp:

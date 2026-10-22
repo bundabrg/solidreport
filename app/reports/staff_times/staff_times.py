@@ -11,7 +11,6 @@ from typing import Dict
 
 import click
 from gotenberg_client.options import PageMarginsType, Measurement, MeasurementUnitType
-from psycopg2 import Error
 from psycopg2.extras import NamedTupleCursor
 
 import systems
@@ -151,46 +150,41 @@ def report(
     end_datetime  = datetime.datetime.combine(end, datetime.time.min).astimezone(datetime.UTC)
 
     resources = resources or {}
-    try:
-        with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
-            sql = f"""
-                SELECT te.start::timestamptz, te.end::timestamptz, te.description, users.id as user_id, users.name as user_name,
-                     clients.id as client_id, clients.name as client_name, 
-                     projects.id as project_id, projects.name as project_name, projects.billable_rate as project_billable_rate,
-                     te.billable_rate, te.billable, organizations.billable_rate as organization_billable_rate
-                FROM users JOIN members ON (members.user_id = users.id)
-                     JOIN time_entries te ON (te.member_id = members.id)
-                     LEFT JOIN projects ON (te.project_id = projects.id)
-                     LEFT JOIN clients ON (te.client_id = clients.id)
-                     JOIN organizations ON (te.organization_id = organizations.id)
-                WHERE te.organization_id = %(organization_id)s
-                    AND te.start >= %(start)s
-                    AND te.start < %(end)s
-                    { "AND clients.name ilike %(client)s" if client_filter else "" }
-                    { "AND projects.name ilike %(project)s" if project_filter else "" }
-                    { "AND users.name ilike %(member)s" if member_filter else "" }
-                    { "AND users.id = %(member_id)s" if member_id_filter else "" }
-                  """
+    with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
+        sql = f"""
+            SELECT te.start::timestamptz, te.end::timestamptz, te.description, users.id as user_id, users.name as user_name,
+                 clients.id as client_id, clients.name as client_name, 
+                 projects.id as project_id, projects.name as project_name, projects.billable_rate as project_billable_rate,
+                 te.billable_rate, te.billable, organizations.billable_rate as organization_billable_rate
+            FROM users JOIN members ON (members.user_id = users.id)
+                 JOIN time_entries te ON (te.member_id = members.id)
+                 LEFT JOIN projects ON (te.project_id = projects.id)
+                 LEFT JOIN clients ON (te.client_id = clients.id)
+                 JOIN organizations ON (te.organization_id = organizations.id)
+            WHERE te.organization_id = %(organization_id)s
+                AND te.start >= %(start)s
+                AND te.start < %(end)s
+                AND te.end is not null
+                {systems.time_work_filter(db)}
+                { "AND clients.name ilike %(client)s" if client_filter else "" }
+                { "AND projects.name ilike %(project)s" if project_filter else "" }
+                { "AND users.name ilike %(member)s" if member_filter else "" }
+                { "AND users.id = %(member_id)s" if member_id_filter else "" }
+              """
 
-            cursor.execute(
-                sql,
-                {
-                    "organization_id": organization_id,
-                    "start": start_datetime.isoformat(),
-                    "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
-                    "project": "%{}%".format(project_filter),
-                    "member": "%{}%".format(member_filter),
-                    "client": "%{}%".format(client_filter),
-                    "member_id": member_id_filter,
-                },
-            )
-            records = cursor.fetchall()
-
-    except (Exception, Error) as error:
-        print("Error while connecting to PostgreSQL", error)
-        return
-    finally:
-        cursor.close()
+        cursor.execute(
+            sql,
+            {
+                "organization_id": organization_id,
+                "start": start_datetime.isoformat(),
+                "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
+                "project": "%{}%".format(project_filter),
+                "member": "%{}%".format(member_filter),
+                "client": "%{}%".format(client_filter),
+                "member_id": member_id_filter,
+            },
+        )
+        records = cursor.fetchall()
 
     # Parse out time entries
     data = DataModel(start=start, end=end)
