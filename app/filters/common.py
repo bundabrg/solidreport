@@ -15,7 +15,7 @@ def format_time(input):
         if day:
             ret = "{:02d}d {}".format(day, ret)
         return ret
-    except:
+    except Exception:
         return "#error"
 
 
@@ -23,7 +23,7 @@ def format_hours(input):
     # Convert seconds to hours (IE: 6.09)
     try:
         return "{:02.02f}".format(input / 60 / 60)
-    except:
+    except Exception:
         return "#error"
 
 
@@ -32,7 +32,7 @@ def format_currency(input):
     # Convert from cents to dollars
     try:
         return "${:,.2f}".format(input / 100)
-    except:
+    except Exception:
         return "#error"
 
 

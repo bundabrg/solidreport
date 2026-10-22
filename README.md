@@ -67,6 +67,24 @@ Right now we just query the database directly which means this generator is only
 who run the on-prem version of SolidTime. Perhaps pulling the data through the API will
 allow support where the database is not directly reachable.
 
+## Solidtime version compatibility
+
+Because reports are built by querying the database directly, schema changes in Solidtime can affect results.
+Current handling:
+
+- Solidtime 0.22 introduced the breaks feature which stores breaks as rows in `time_entries` with
+  `type = 'break'`. These rows are excluded from all reports and action lookups. On older schemas without the
+  `type` column the filter is detected and skipped automatically, so the same build works either side of the
+  upgrade.
+- Report periods window on the time entry **end** time (`end >= start AND end < end`), so every closed entry
+  appears in exactly one report period. This is deliberate: an entry whose timer is still running when a report
+  runs is simply picked up by the report covering the period in which the timer is eventually stopped, rather
+  than being lost or crashing the run. Entries are also bucketed into day columns by their end date, so a timer
+  straddling the period boundary lands on the day it was stopped (inside the reported period).
+- A still-running timer (`end` is NULL) never matches the window and is left for a later report.
+- Mount `/etc/localtime` into the container (see Quick Start) so report period boundaries and day bucketing
+  happen in your local timezone rather than UTC.
+
 ## Reports
 
 The available reports are found under `reports`. This is the meaty bit of the

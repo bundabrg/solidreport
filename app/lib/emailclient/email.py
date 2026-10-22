@@ -6,7 +6,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.mime.text import MIMEText
-from smtplib import SMTP
+import smtplib
 from typing import List, Optional, Dict, TYPE_CHECKING
 
 import jinja2 as jinja2
@@ -115,7 +115,18 @@ class Email(object):
                 msg.attach(data)
 
         # Send Email
-        s = SMTP(self._manager.host, self._manager.port)
-        s.login(self._manager.username, self._manager.password)
-        s.sendmail(self._manager.from_email, msg["To"], msg.as_string())
-        s.quit()
+        if self._manager.port == 465:
+            # Implicit TLS
+            smtp = smtplib.SMTP_SSL(self._manager.host, self._manager.port, timeout=30)
+        else:
+            smtp = smtplib.SMTP(self._manager.host, self._manager.port, timeout=30)
+        with smtp:
+            if not isinstance(smtp, smtplib.SMTP_SSL):
+                # Opportunistic STARTTLS when the server offers it, so
+                # credentials are never sent in clear text if it can be avoided
+                try:
+                    smtp.starttls()
+                except smtplib.SMTPNotSupportedError:
+                    pass
+            smtp.login(self._manager.username, self._manager.password)
+            smtp.sendmail(self._manager.from_email, msg["To"], msg.as_string())

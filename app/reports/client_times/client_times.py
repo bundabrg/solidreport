@@ -12,7 +12,6 @@ from uuid import UUID
 
 import click
 from gotenberg_client.options import PageMarginsType, Measurement, MeasurementUnitType
-from psycopg2 import Error
 from psycopg2.extras import NamedTupleCursor
 
 import systems
@@ -35,10 +34,11 @@ def find_client(db, search: str) -> UUID | None:
     :return: Client ID
     """
     with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
-        sql = f"""
-            SELECT clients.id as client_id
+        sql = """
+            SELECT clients.id as client_id, clients.name as client_name
             FROM clients
             WHERE clients.name ilike %(search)s
+            ORDER BY clients.name
         """
 
         cursor.execute(
@@ -48,8 +48,20 @@ def find_client(db, search: str) -> UUID | None:
             },
         )
 
-        result = cursor.fetchone()
-        return result.client_id if result is not None else None
+        rows = cursor.fetchall()
+
+    if not rows:
+        return None
+    if len(rows) > 1:
+        print(
+            "Warning: client filter '{}' matched {} clients, using '{}': {}".format(
+                search,
+                len(rows),
+                rows[0].client_name,
+                ", ".join(r.client_name for r in rows),
+            )
+        )
+    return rows[0].client_id
 
 
 @click.command("client_times")
@@ -176,60 +188,55 @@ def report(
     end_datetime = datetime.datetime.combine(end, datetime.time.min).astimezone(datetime.UTC)
 
     resources = resources or {}
-    try:
-        with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
-            sql = f"""
-                SELECT clients.id as client_id, clients.name as client_name
-                FROM clients
-                WHERE { "clients.id = %(client_id)s" if client_id else "clients.id is null" }
-            """
+    with db.cursor(cursor_factory=NamedTupleCursor) as cursor:
+        sql = f"""
+            SELECT clients.id as client_id, clients.name as client_name
+            FROM clients
+            WHERE { "clients.id = %(client_id)s" if client_id else "clients.id is null" }
+        """
 
-            cursor.execute(
-                sql,
-                {
-                    "client_id": client_id,
-                },
-            )
+        cursor.execute(
+            sql,
+            {
+                "client_id": client_id,
+            },
+        )
 
-            records = cursor.fetchone()
-            client_name = records.client_name if records else "(No Client)"
+        records = cursor.fetchone()
+        client_name = records.client_name if records else "(No Client)"
 
-            sql = f"""
-                SELECT te.start::timestamptz, te.end::timestamptz, te.description, users.id as user_id, users.name as user_name,
-                     clients.id as client_id, clients.name as client_name, 
-                     projects.id as project_id, projects.name as project_name, projects.billable_rate as project_billable_rate,
-                     te.billable_rate, te.billable, organizations.billable_rate as organization_billable_rate
-                FROM users JOIN members ON (members.user_id = users.id)
-                     JOIN time_entries te ON (te.member_id = members.id)
-                     LEFT JOIN projects ON (te.project_id = projects.id)
-                     LEFT JOIN clients ON (te.client_id = clients.id)
-                     JOIN organizations ON (te.organization_id = organizations.id)
-                WHERE te.organization_id = %(organization_id)s
-                    AND te.start >= %(start)s
-                    AND te.start < %(end)s
-                    { "AND clients.id = %(client)s" if client_id else "AND clients.id is null" }
-                    { "AND projects.name ilike %(project)s" if project_filter else "" }
-                    { "AND users.name ilike %(member)s" if member_filter else "" }
-                  """
+        sql = f"""
+            SELECT te.start::timestamptz, te.end::timestamptz, te.description, users.id as user_id, users.name as user_name,
+                 clients.id as client_id, clients.name as client_name, 
+                 projects.id as project_id, projects.name as project_name, projects.billable_rate as project_billable_rate,
+                 te.billable_rate, te.billable, organizations.billable_rate as organization_billable_rate
+            FROM users JOIN members ON (members.user_id = users.id)
+                 JOIN time_entries te ON (te.member_id = members.id)
+                 LEFT JOIN projects ON (te.project_id = projects.id)
+                 LEFT JOIN clients ON (te.client_id = clients.id)
+                 JOIN organizations ON (te.organization_id = organizations.id)
+            WHERE te.organization_id = %(organization_id)s
+                AND te.end >= %(start)s
+                AND te.end < %(end)s
+                AND te.end is not null
+                {systems.time_work_filter(db)}
+                { "AND clients.id = %(client)s" if client_id else "AND clients.id is null" }
+                { "AND projects.name ilike %(project)s" if project_filter else "" }
+                { "AND users.name ilike %(member)s" if member_filter else "" }
+              """
 
-            cursor.execute(
-                sql,
-                {
-                    "organization_id": organization_id,
-                    "start": start_datetime.isoformat(),
-                    "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
-                    "project": "%{}%".format(project_filter),
-                    "member": "%{}%".format(member_filter),
-                    "client": client_id,
-                },
-            )
-            records = cursor.fetchall()
-
-    except (Exception, Error) as error:
-        print("Error while connecting to PostgreSQL", error)
-        return
-    finally:
-        cursor.close()
+        cursor.execute(
+            sql,
+            {
+                "organization_id": organization_id,
+                "start": start_datetime.isoformat(),
+                "end": (end_datetime + datetime.timedelta(days=1)).isoformat(),
+                "project": "%{}%".format(project_filter),
+                "member": "%{}%".format(member_filter),
+                "client": client_id,
+            },
+        )
+        records = cursor.fetchall()
 
     # Parse out time entries
     data = DataModel(
@@ -252,13 +259,15 @@ def report(
             )
         project_data = data.projects[project_id]
 
-        start_date = r.start.astimezone().date()
+        # Bucket by end date so every column falls inside the report period
+        # (entries are windowed on te.end; straddling entries land on the day they ended).
+        bucket_date = r.end.astimezone().date()
 
-        if start_date not in project_data.dates:
-            project_data.dates[start_date] = DateDataModel(date=start_date)
-        if start_date not in data.summary.dates:
-            data.summary.dates[start_date] = DateSummaryModel(date=start_date)
-        date_data = project_data.dates[start_date]
+        if bucket_date not in project_data.dates:
+            project_data.dates[bucket_date] = DateDataModel(date=bucket_date)
+        if bucket_date not in data.summary.dates:
+            data.summary.dates[bucket_date] = DateSummaryModel(date=bucket_date)
+        date_data = project_data.dates[bucket_date]
 
         if r.user_id not in date_data.members:
             date_data.members[r.user_id] = MemberDataModel(name=r.user_name)
