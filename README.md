@@ -76,7 +76,12 @@ Current handling:
   `type = 'break'`. These rows are excluded from all reports and action lookups. On older schemas without the
   `type` column the filter is detected and skipped automatically, so the same build works either side of the
   upgrade.
-- Time entries with a still-running timer (`end` is NULL) are excluded from the date range queries.
+- Report periods window on the time entry **end** time (`end >= start AND end < end`), so every closed entry
+  appears in exactly one report period. This is deliberate: an entry whose timer is still running when a report
+  runs is simply picked up by the report covering the period in which the timer is eventually stopped, rather
+  than being lost or crashing the run. Entries are also bucketed into day columns by their end date, so a timer
+  straddling the period boundary lands on the day it was stopped (inside the reported period).
+- A still-running timer (`end` is NULL) never matches the window and is left for a later report.
 - Mount `/etc/localtime` into the container (see Quick Start) so report period boundaries and day bucketing
   happen in your local timezone rather than UTC.
 

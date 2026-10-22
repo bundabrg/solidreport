@@ -162,8 +162,8 @@ def report(
                  LEFT JOIN clients ON (te.client_id = clients.id)
                  JOIN organizations ON (te.organization_id = organizations.id)
             WHERE te.organization_id = %(organization_id)s
-                AND te.start >= %(start)s
-                AND te.start < %(end)s
+                AND te.end >= %(start)s
+                AND te.end < %(end)s
                 AND te.end is not null
                 {systems.time_work_filter(db)}
                 { "AND clients.name ilike %(client)s" if client_filter else "" }
@@ -193,13 +193,15 @@ def report(
             data.members[r.user_id] = MemberDataModel(name=r.user_name)
         member_data = data.members[r.user_id]
 
-        start_date = r.start.astimezone().date()
+        # Bucket by end date so every column falls inside the report period
+        # (entries are windowed on te.end; straddling entries land on the day they ended).
+        bucket_date = r.end.astimezone().date()
 
-        if start_date not in member_data.dates:
-            member_data.dates[start_date] = DateDataModel(date=start_date)
-        if start_date not in data.summary.dates:
-            data.summary.dates[start_date] = DateSummaryModel(date=start_date)
-        date_data = member_data.dates[start_date]
+        if bucket_date not in member_data.dates:
+            member_data.dates[bucket_date] = DateDataModel(date=bucket_date)
+        if bucket_date not in data.summary.dates:
+            data.summary.dates[bucket_date] = DateSummaryModel(date=bucket_date)
+        date_data = member_data.dates[bucket_date]
 
         if r.client_id not in date_data.clients:
             date_data.clients[r.client_id] = ClientDataModel(

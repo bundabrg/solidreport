@@ -70,7 +70,7 @@ def execute(cfg: Config, action_cfg: ActionModel, var: Dict[str, str]):
             SELECT DISTINCT clients.id as client_id, clients.name as client_name
             FROM time_entries te LEFT JOIN clients ON (te.client_id = clients.id)
             WHERE te.organization_id = %(organization_id)s
-                AND te.start >= %(start)s
+                AND te.end >= %(start)s
                 AND te.end < %(end)s
                 AND te.end is not null
                 {systems.time_work_filter(db)}
